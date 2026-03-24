@@ -1,4 +1,4 @@
-﻿
+
 import { Html, Head, Main, NextScript } from 'next/document';
 
 const themeInitializer = `(() => {
@@ -40,7 +40,7 @@ export default function Document() {
         />
         <script 
           dangerouslySetInnerHTML={{ 
-            __html: themeInitializer.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+            __html: themeInitializer
           }} 
         />
       </Head>
