@@ -9,7 +9,7 @@ import useAuthState from '../../lib/useAuthState';
 import API_URL from '../../lib/api';
 import { useCandidatesQuery } from '../../lib/queryHooks';
 import { getSidebarLinks } from '../../lib/sidebarLinks';
-import { handleError } from '../../../components/ui/error-handler';
+import { handleError } from '../../components/ui/error-handler';
 
 const CandidatesKanbanPage = () => {
   const router = useRouter();

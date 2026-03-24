@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import {
@@ -246,6 +246,13 @@ const ApplicationsPage = () => {
     () => STATUS_OPTIONS.reduce((total, status) => total + (statusSummary[status] ?? 0), 0),
     [statusSummary],
   );
+
+  const hasActiveFilters = Boolean(searchTerm.trim()) || Boolean(statusFilter);
+
+  const resetFilters = useCallback(() => {
+    setSearchTerm('');
+    setStatusFilter('');
+  }, []);
 
   const sidebarLinks = useMemo(() => getSidebarLinks(userRole), [userRole]);
 

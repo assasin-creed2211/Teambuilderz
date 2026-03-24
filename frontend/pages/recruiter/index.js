@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { toast } from 'react-hot-toast';
 import {
@@ -525,7 +525,7 @@ const RecruiterDashboard = () => {
     router.push('/alerts');
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await fetch(`${API_URL}/api/v1/auth/logout`, {
         method: 'POST',
@@ -539,7 +539,7 @@ const RecruiterDashboard = () => {
     localStorage.removeItem('userName');
     localStorage.removeItem('userId');
     router.push('/login');
-  };
+  }, [router]);
 
   const sidebarLinks = getSidebarLinks(role);
   const scrollToAttendanceCard = useCallback(() => {

@@ -1,2 +1,9 @@
-// This is a placeholder to access the dashboard.js content
-// I'll need to provide the fix pattern for you to apply manually
+// Placeholder — redirects to admin dashboard
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+
+export default function DashboardBackup() {
+  const router = useRouter();
+  useEffect(() => { router.replace('/admin'); }, [router]);
+  return null;
+}

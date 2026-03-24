@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   User,
@@ -1582,8 +1582,21 @@ const createAssessment = useCreateAssessmentMutation(token, {
         </div>
       </Card>
     </DashboardLayout>
-  );
+    <ConfirmDialog
+      open={confirmDialogOpen}
+      onOpenChange={setConfirmDialogOpen}
+      title="Delete Note"
+      description="Are you sure you want to delete this note? This action cannot be undone."
+      confirmText="Delete"
+      cancelText="Cancel"
+      variant="destructive"
+      onConfirm={confirmDeleteNote}
+      icon={Trash2}
+    />
+  </>);
 };
+
+export default CandidateDetailPage;
 
 const InfoTile = ({ icon, label, value }) => (
   <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
@@ -1669,30 +1682,4 @@ const NoteItem = ({ note, formatDateTime, canEdit, canDelete, onEdit, onDelete, 
       </div>
     )}
   </div>
-    </DashboardLayout>
-  
-  <ConfirmDialog
-    open={confirmDialogOpen}
-    onOpenChange={setConfirmDialogOpen}
-    title="Delete Note"
-    description="Are you sure you want to delete this note? This action cannot be undone."
-    confirmText="Delete"
-    cancelText="Cancel"
-    variant="destructive"
-    onConfirm={confirmDeleteNote}
-    icon={Trash2}
-  />
-</>
-
-export default CandidateDetailPage;
-
-
-
-
-
-
-
-
-
-
-
+);

@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   Users,
@@ -507,7 +507,7 @@ const applicationsTodayDetails = (
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await fetch(`${API_URL}/api/v1/auth/logout`, {
         method: 'POST',
@@ -520,7 +520,7 @@ const applicationsTodayDetails = (
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     router.push('/login');
-  };
+  }, [router]);
 
   const handleBulkApprovalAction = async (action) => {
     if (!token || !canBulkAct) {
