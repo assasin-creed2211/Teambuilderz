@@ -99,6 +99,10 @@ function createLoginHandler({ db, jwtLib, bcryptLib, secret }) {
         const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         user = result.rows[0];
       } catch (dbError) {
+        if (isProduction) {
+          console.error('[Auth] Database error in production', dbError);
+          throw dbError; // Don't fall back to mocks in production
+        }
         console.warn('[Auth] Database error, checking mock credentials');
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
         const recruiterEmail = process.env.RECRUITER_EMAIL || 'recruiter@example.com';
@@ -185,7 +189,7 @@ const CLEAR_COOKIE_OPTIONS = {
   sameSite: sameSitePolicy,
   secure: useSecureCookies,
 };
-const ALLOWED_ORIGINS = (config.get('CORS_ORIGIN', 'http://localhost:3000,http://localhost:3001'))
+const ALLOWED_ORIGINS = (config.get('CORS_ORIGIN', 'http://localhost:3000,http://localhost:3001,https://teambuilderz.vercel.app'))
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -701,18 +705,28 @@ async function ensureCandidateAssignments(db) {
 }
 
 async function ensureSchemaEvolution(db) {
+  if (config.getBool('SKIP_SCHEMA_EVOLUTION', isProduction)) {
+    console.log('[DB] Skipping schema evolution as per config');
+    return;
+  }
   console.log('--- DEBUG: Executing ensureSchemaEvolution ---');
-  await Promise.all([
-    ensureApplicationColumns(db),
-    ensureInterviewColumns(db),
-    ensureAssessmentColumns(db),
-    ensureReminderNoteLink(db),
-    ensureUserActivityColumns(db),
-    ensureRecruiterCandidateActivityTable(db),
-    ensureAttendanceSchema(db),
-  ]);
+  try {
+    await Promise.all([
+      ensureApplicationColumns(db),
+      ensureInterviewColumns(db),
+      ensureAssessmentColumns(db),
+      ensureReminderNoteLink(db),
+      ensureUserActivityColumns(db),
+      ensureRecruiterCandidateActivityTable(db),
+      ensureAttendanceSchema(db),
+    ]);
 
-  await ensureCandidateAssignments(db);
+    await ensureCandidateAssignments(db);
+  } catch (err) {
+    console.error('[DB] Schema evolution failed:', err.message);
+    // In production, we don't want to crash the whole process if a minor alter fails
+    if (!isProduction) throw err;
+  }
 }
 
 async function ensureAuditNotifications(db) {
@@ -6236,24 +6250,42 @@ async function initAuditStream() {
 }
 
 async function initializeInfrastructure({ skipDb } = {}) {
-  console.log('--- DEBUG: Executing initializeInfrastructure ---');
+  const isVercel = !!process.env.VERCEL;
+  console.log(`--- DEBUG: Initializing Infrastructure (Vercel: ${isVercel}) ---`);
+  
   if (skipDb) {
     console.log('Skipping database initialization as requested.');
     return;
   }
+
   try {
     const client = await pool.connect();
     client.release();
     console.log('Connected to PostgreSQL!');
-    await setupDatabase();
+    
+    // On Vercel, we want to skip heavy startup logic that runs on every request
+    const skipSetup = isVercel || config.getBool('SKIP_DB_SETUP', false);
+    
+    if (!skipSetup) {
+      await setupDatabase();
+    }
+
     await initAuditStream();
-    scheduleAutomationTasks();
-    await checkDailyQuotas();
-    await checkAssessmentDeadlines();
-    await checkInterviewReminders();
+    
+    // Only schedule automation if NOT on Vercel (Lambdas don't support intervals)
+    if (!isVercel) {
+      scheduleAutomationTasks();
+      await checkDailyQuotas();
+      await checkAssessmentDeadlines();
+      await checkInterviewReminders();
+    }
   } catch (err) {
     console.error('Database connection failed:', err.message);
-    console.log('Starting server without database connection for testing...');
+    if (!isProduction) {
+      console.log('Starting server without database connection for testing...');
+    } else {
+      throw err;
+    }
   }
 }
 

@@ -81,9 +81,16 @@ const CandidatesKanbanPage = () => {
   // Check authentication
   if (!ready || !token) {
     return (
-      <DashboardLayout title="Candidates" subtitle="Loading..." links={sidebarLinks}>
-        <div className="h-48 flex items-center justify-center text-muted-foreground">
-          Loading...
+      <DashboardLayout title="Candidates" subtitle="Pipeline" links={sidebarLinks}>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 h-[600px]">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-full rounded-xl border bg-muted/20 p-4 space-y-4 animate-pulse">
+               <div className="h-8 w-2/3 rounded bg-muted" />
+               <div className="h-32 w-full rounded-lg bg-muted" />
+               <div className="h-32 w-full rounded-lg bg-muted" />
+               <div className="h-32 w-full rounded-lg bg-muted" />
+            </div>
+          ))}
         </div>
       </DashboardLayout>
     );

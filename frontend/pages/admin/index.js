@@ -718,7 +718,36 @@ const applicationsTodayDetails = (
         secondaryActions={headerSecondaryActions}
         quickActions={headerQuickActions}
       >
-        <div className="h-48 flex items-center justify-center text-muted-foreground">Loading dashboard...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-32 rounded-xl border bg-card p-4 space-y-3 animate-pulse">
+              <div className="flex justify-between items-start">
+                <div className="h-8 w-8 rounded-lg bg-muted" />
+                <div className="h-4 w-12 rounded bg-muted" />
+              </div>
+              <div className="h-6 w-1/2 rounded bg-muted" />
+              <div className="h-3 w-3/4 rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="h-64 rounded-xl border bg-card p-4 space-y-4 animate-pulse">
+            <div className="h-6 w-1/3 rounded bg-muted" />
+            <div className="space-y-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-10 w-full rounded bg-muted" />
+              ))}
+            </div>
+          </div>
+          <div className="h-64 rounded-xl border bg-card p-4 space-y-4 animate-pulse">
+            <div className="h-6 w-1/3 rounded bg-muted" />
+            <div className="grid grid-cols-2 gap-4">
+               {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-20 w-full rounded bg-muted" />
+              ))}
+            </div>
+          </div>
+        </div>
       </DashboardLayout>
     );
   }

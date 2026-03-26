@@ -1,36 +1,35 @@
-﻿// Centralized API base URL selection so the frontend can run in different environments.
-const buildBrowserUrl = () => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  const protocol = window.location.protocol || 'http:';
-  const hostname = window.location.hostname || 'localhost';
-  const browserPort = window.location.port;
-
-  // When the app runs behind the HTTPS nginx proxy there is no explicit port,
-  // so we have to route API calls through the proxied /api path.
-  if (protocol === 'https:' && (!browserPort || browserPort === '443')) {
-    return `${protocol}//${hostname}/api`;
-  }
-
-  const port =
-    process.env.NEXT_PUBLIC_API_PORT ||
-    (browserPort === '3000' ? '3001' : browserPort) ||
-    '3001';
-
-  return port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
-};
-
+/**
+ * Unified API URL Resolution
+ * 
+ * In production (Vercel), we use relative paths (/api) so the browser automatically 
+ * routes to the same domain. In development, we fallback to localhost:3001.
+ */
 const resolveApiUrl = () => {
-  const defaultUrl = 'http://localhost:3001';
-  const browserUrl = buildBrowserUrl();
-
-  if (!browserUrl) {
-    return process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || defaultUrl;
+  // SSR Handle (Server-side rendering)
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:3001';
   }
 
-  return process.env.NEXT_PUBLIC_API_URL || browserUrl || defaultUrl;
+  // Frontend Override
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  const { hostname, protocol, port } = window.location;
+
+  // If we are on the main production domain, use relative /api
+  if (hostname.includes('vercel.app') || hostname.includes('teambuilderz.us')) {
+     return `${protocol}//${hostname}/api`;
+  }
+
+  // Development fallback: If on port 3000, API is likely on 3001
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    const apiPort = port === '3000' ? '3001' : port;
+    return `${protocol}//${hostname}:${apiPort}`;
+  }
+
+  // Universal relative fallback
+  return '/api';
 };
 
 export const API_URL = resolveApiUrl();
